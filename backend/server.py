@@ -240,7 +240,12 @@ async def create_income(income_data: IncomeCreate):
             gst_calculation=gst_calc
         )
         
-        await db.income.insert_one(income.dict())
+        # Convert to dict and handle date serialization
+        income_dict = income.dict()
+        income_dict['date'] = income_dict['date'].isoformat() if hasattr(income_dict['date'], 'isoformat') else income_dict['date']
+        income_dict['created_at'] = income_dict['created_at'].isoformat() if hasattr(income_dict['created_at'], 'isoformat') else income_dict['created_at']
+        
+        await db.income.insert_one(income_dict)
         return income
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
