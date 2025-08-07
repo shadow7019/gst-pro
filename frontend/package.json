@@ -78,6 +78,8 @@
     "concurrently": "^9.2.0",
     "electron": "^37.2.6",
     "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
+    "electron-reload": "^2.0.0-alpha.1",
     "eslint": "9.23.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
