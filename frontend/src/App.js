@@ -14,7 +14,9 @@ import { Toaster } from './components/ui/toaster';
 import { toast } from './hooks/use-toast';
 import { PlusCircle, TrendingUp, TrendingDown, Calculator, MessageCircle, FileText, Trash2, IndianRupee, Building, Receipt, Bot, ChartBar } from 'lucide-react';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = window.electron 
+  ? 'http://127.0.0.1:8001'  // Local backend for desktop app
+  : process.env.REACT_APP_BACKEND_URL; // Web backend URL
 const API = `${BACKEND_URL}/api`;
 
 const expenseCategories = [
