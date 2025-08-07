@@ -533,16 +533,6 @@ function App() {
     );
   };
 
-  const deleteIncome = async (id) => {
-    try {
-      await axios.delete(`${API}/income/${id}`);
-      toast.success('Income deleted');
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to delete income');
-    }
-  };
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
