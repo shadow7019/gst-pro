@@ -207,7 +207,12 @@ async def create_expense(expense_data: ExpenseCreate):
             gst_calculation=gst_calc
         )
         
-        await db.expenses.insert_one(expense.dict())
+        # Convert to dict and handle date serialization
+        expense_dict = expense.dict()
+        expense_dict['date'] = expense_dict['date'].isoformat() if hasattr(expense_dict['date'], 'isoformat') else expense_dict['date']
+        expense_dict['created_at'] = expense_dict['created_at'].isoformat() if hasattr(expense_dict['created_at'], 'isoformat') else expense_dict['created_at']
+        
+        await db.expenses.insert_one(expense_dict)
         return expense
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
