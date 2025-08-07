@@ -30,9 +30,18 @@ jobs:
         with:
           python-version: '3.9'
           
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements_standalone.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+          
       - name: Install Python dependencies
         run: |
           cd backend
+          python -m pip install --upgrade pip
           pip install -r requirements_standalone.txt
           pip install pyinstaller
           
@@ -45,11 +54,14 @@ jobs:
         run: |
           cd backend
           python build_executable.py
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend
           
       - name: Prepare frontend build
         run: |
           cd frontend
           mkdir -p backend
+          ls -la ../backend/ || dir ..\backend\ || echo "Backend directory contents:"
           
       - name: Copy backend files (Unix)
         if: matrix.os != 'windows-latest'
@@ -57,7 +69,6 @@ jobs:
           cd frontend
           cp -r ../backend/dist/* backend/ || echo "No backend dist files"
           cp ../backend/gst_data.db backend/ || echo "No database file"
-        shell: bash
         shell: bash
           
       - name: Copy backend files (Windows)
@@ -98,26 +109,41 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
+      - name: List built files
+        run: |
+          echo "Contents of frontend/dist:"
+          ls -la frontend/dist/ || echo "No dist directory found"
+          
       - name: Upload artifacts (Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
           name: windows-installer
-          path: frontend/dist/*.exe
+          path: |
+            frontend/dist/*.exe
+            frontend/dist/*.msi
+          if-no-files-found: warn
           
       - name: Upload artifacts (macOS)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v3
         with:
           name: macos-installer
-          path: frontend/dist/*.dmg
+          path: |
+            frontend/dist/*.dmg
+            frontend/dist/*.pkg
+          if-no-files-found: warn
           
       - name: Upload artifacts (Linux)
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
         with:
           name: linux-installer
-          path: frontend/dist/*.AppImage
+          path: |
+            frontend/dist/*.AppImage
+            frontend/dist/*.deb
+            frontend/dist/*.rpm
+          if-no-files-found: warn
 
   create-release:
     needs: release

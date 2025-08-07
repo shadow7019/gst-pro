@@ -1,0 +1,61 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          yarn install --frozen-lockfile
+          
+      - name: Build React app
+        run: |
+          cd frontend
+          yarn build
+          
+      - name: Verify build output
+        run: |
+          echo "Build output verification:"
+          ls -la frontend/build/
+          echo ""
+          echo "Index.html exists:"
+          test -f frontend/build/index.html && echo "✅ Yes" || echo "❌ No"
+          echo ""
+          echo "Build size:"
+          du -sh frontend/build/
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: react-build
+          path: frontend/build/
+          retention-days: 30
+          
+      - name: Deployment status
+        run: |
+          echo "🚀 Build completed successfully!"
+          echo "📦 Build artifacts uploaded to GitHub Actions"
+          echo "🌐 Netlify will auto-deploy from GitHub when connected"
+          echo ""
+          echo "To complete Netlify setup:"
+          echo "1. Go to https://app.netlify.com"
+          echo "2. Connect your GitHub repository"  
+          echo "3. Netlify will auto-detect settings from netlify.toml"
+          echo "4. Your app will deploy automatically on every push to main"

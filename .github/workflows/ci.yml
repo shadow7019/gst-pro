@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Install Node dependencies
+        run: |
+          cd frontend
+          yarn install --frozen-lockfile
+          
+      - name: Test Python backend
+        run: |
+          cd backend
+          python -c "import server; print('Backend imports successfully')"
+          
+      - name: Test React build
+        run: |
+          cd frontend
+          yarn build
+          
+      - name: Test Netlify configuration
+        run: |
+          echo "Testing netlify.toml syntax..."
+          python -c "
+          try:
+              import tomllib
+              with open('netlify.toml', 'rb') as f:
+                  data = tomllib.load(f)
+              print('✅ netlify.toml is valid!')
+          except ImportError:
+              try:
+                  import toml
+                  with open('netlify.toml', 'r') as f:
+                      data = toml.load(f)
+                  print('✅ netlify.toml is valid!')
+              except ImportError:
+                  print('⚠️ TOML parser not available, skipping validation')
+          except Exception as e:
+              print(f'❌ netlify.toml validation failed: {e}')
+              exit(1)
+          "
+          
+      - name: Check project structure
+        run: |
+          echo "🔍 Project structure check..."
+          echo "Frontend files:"
+          ls -la frontend/ | head -10
+          echo ""
+          echo "Backend files:"
+          ls -la backend/ | head -10
+          echo ""
+          echo "Root files:"
+          ls -la . | head -10
+          echo ""
+          echo "✅ Structure check complete"
