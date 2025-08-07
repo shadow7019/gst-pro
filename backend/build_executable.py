@@ -23,7 +23,7 @@ def build_executable():
     
     print("🏗️  Building GST Pro Backend Executable...")
     
-    # PyInstaller command
+    # PyInstaller command with all necessary hidden imports
     cmd = [
         "pyinstaller",
         "--onefile",
@@ -31,38 +31,50 @@ def build_executable():
         "--distpath", "./dist",
         "--specpath", "./build",
         "--workpath", "./build/temp",
-        "--add-data", "*.py:.",
+        "--hidden-import", "fastapi",
+        "--hidden-import", "uvicorn",
+        "--hidden-import", "uvicorn.logging",
+        "--hidden-import", "uvicorn.loops.auto",
         "--hidden-import", "uvicorn.protocols.http.auto",
-        "--hidden-import", "uvicorn.protocols.websockets.auto", 
+        "--hidden-import", "uvicorn.protocols.websockets.auto",
         "--hidden-import", "uvicorn.lifespan.on",
         "--hidden-import", "aiosqlite",
-        "--hidden-import", "sqlalchemy.dialects.sqlite",
+        "--hidden-import", "pydantic",
+        "--hidden-import", "fastapi.middleware.cors",
+        "--hidden-import", "sqlite3",
+        "--hidden-import", "json",
         "--console",
         "server_standalone.py"
     ]
     
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print("✅ Executable built successfully!")
-        print(f"📦 Location: {Path('dist/gst-pro-backend.exe').absolute()}")
+        print("✅ Backend executable built successfully!")
+        print(f"📦 Location: {Path('dist').absolute()}")
         
-        # Test the executable
-        print("\n🧪 Testing executable...")
-        test_cmd = ["./dist/gst-pro-backend", "--help"]
-        test_result = subprocess.run(test_cmd, capture_output=True, text=True)
-        
-        if test_result.returncode == 0:
-            print("✅ Executable test passed!")
+        # Verify the executable was created
+        exe_path = Path("dist/gst-pro-backend.exe" if os.name == "nt" else "dist/gst-pro-backend")
+        if exe_path.exists():
+            print(f"📊 Executable size: {exe_path.stat().st_size / (1024*1024):.1f} MB")
+            print("🎉 Backend executable is ready for packaging!")
         else:
-            print("⚠️  Executable test had issues, but build completed.")
+            print("❌ Executable not found after build!")
             
     except subprocess.CalledProcessError as e:
         print(f"❌ Build failed: {e}")
         print(f"stdout: {e.stdout}")
         print(f"stderr: {e.stderr}")
         sys.exit(1)
-    
-    print("\n🎉 Backend executable is ready for packaging!")
 
 if __name__ == "__main__":
+    # Ensure we're in the right directory
+    os.chdir(Path(__file__).parent)
+    
+    # Check if PyInstaller is available
+    try:
+        subprocess.run(["pyinstaller", "--version"], check=True, capture_output=True)
+    except subprocess.CalledProcessError:
+        print("❌ PyInstaller not found. Installing...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller==6.15.0"], check=True)
+    
     build_executable()

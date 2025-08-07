@@ -50,8 +50,23 @@ jobs:
         run: |
           cd frontend
           mkdir -p backend
-          cp -r ../backend/dist/* backend/ || true
-          cp ../backend/gst_data.db backend/ || true
+          
+      - name: Copy backend files (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd frontend
+          cp -r ../backend/dist/* backend/ || echo "No backend dist files"
+          cp ../backend/gst_data.db backend/ || echo "No database file"
+        shell: bash
+        shell: bash
+          
+      - name: Copy backend files (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd frontend
+          if (Test-Path "../backend/dist") { Copy-Item -Path "../backend/dist/*" -Destination "backend/" -Recurse -Force }
+          if (Test-Path "../backend/gst_data.db") { Copy-Item -Path "../backend/gst_data.db" -Destination "backend/" -Force }
+        shell: powershell
           
       - name: Build React app
         run: |
@@ -73,6 +88,7 @@ jobs:
           yarn electron-builder --mac --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
           
       - name: Build Electron app (Linux)
         if: matrix.os == 'ubuntu-latest'

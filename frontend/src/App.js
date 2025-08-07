@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
-import { Card } from './components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
@@ -12,24 +12,34 @@ import { Badge } from './components/ui/badge';
 import { Textarea } from './components/ui/textarea';
 import { Toaster } from './components/ui/toaster';
 import { toast } from './hooks/use-toast';
-import { PlusCircle, TrendingUp, TrendingDown, Calculator, MessageCircle, FileText, Trash2, IndianRupee, Building, Receipt, Bot, ChartBar } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
+import { Progress } from './components/ui/progress';
+import { 
+  PlusCircle, TrendingUp, TrendingDown, Calculator, MessageCircle, 
+  FileText, Trash2, IndianRupee, Building, Receipt, Bot, ChartBar,
+  DollarSign, CreditCard, AlertTriangle, CheckCircle, Info,
+  Download, Upload, Calendar, BarChart3, PieChart, Target,
+  Lightbulb, FileCheck, HelpCircle, Settings, Zap
+} from 'lucide-react';
 
+// Enhanced backend detection for desktop app
 const BACKEND_URL = window.electron 
   ? 'http://127.0.0.1:8001'  // Local backend for desktop app
   : process.env.REACT_APP_BACKEND_URL; // Web backend URL
 const API = `${BACKEND_URL}/api`;
 
 const expenseCategories = [
-  { value: 'office_rent', label: 'Office Rent', rate: '0%' },
-  { value: 'equipment', label: 'Equipment', rate: '18%' },
-  { value: 'travel', label: 'Travel', rate: '5%' },
-  { value: 'meals', label: 'Meals', rate: '5%' },
-  { value: 'software', label: 'Software', rate: '18%' },
-  { value: 'marketing', label: 'Marketing', rate: '18%' },
-  { value: 'professional_services', label: 'Professional Services', rate: '18%' },
-  { value: 'utilities', label: 'Utilities', rate: '18%' },
-  { value: 'office_supplies', label: 'Office Supplies', rate: '18%' },
-  { value: 'other', label: 'Other', rate: '18%' }
+  { value: 'office_rent', label: 'Office Rent', rate: '0%', description: 'Commercial property rent' },
+  { value: 'equipment', label: 'Equipment', rate: '18%', description: 'Computers, furniture, machinery' },
+  { value: 'travel', label: 'Travel', rate: '5%', description: 'Transportation and lodging' },
+  { value: 'meals', label: 'Meals', rate: '5%', description: 'Business meals and entertainment' },
+  { value: 'software', label: 'Software', rate: '18%', description: 'Software licenses and subscriptions' },
+  { value: 'marketing', label: 'Marketing', rate: '18%', description: 'Advertising and promotion' },
+  { value: 'professional_services', label: 'Professional Services', rate: '18%', description: 'Legal, accounting, consulting' },
+  { value: 'utilities', label: 'Utilities', rate: '18%', description: 'Electricity, internet, phone' },
+  { value: 'office_supplies', label: 'Office Supplies', rate: '18%', description: 'Stationery, printing materials' },
+  { value: 'other', label: 'Other', rate: '18%', description: 'Miscellaneous business expenses' }
 ];
 
 const indianStates = [
@@ -37,7 +47,17 @@ const indianStates = [
   'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
   'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
   'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
-  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi'
+];
+
+// Tax advice prompts for quick access
+const quickTaxQueries = [
+  { title: 'Optimize Tax Savings', query: 'How can I optimize my tax savings this quarter?' },
+  { title: 'GST Filing Help', query: 'What do I need to know about GST filing deadlines?' },
+  { title: 'Expense Deductions', query: 'What business expenses can I claim as deductions?' },
+  { title: 'Compliance Check', query: 'Am I compliant with current GST regulations?' },
+  { title: 'Quarterly Planning', query: 'Help me plan for quarterly tax payments' },
+  { title: 'ITC Optimization', query: 'How can I maximize my Input Tax Credit?' }
 ];
 
 function App() {
@@ -48,10 +68,12 @@ function App() {
   const [taxAdvice, setTaxAdvice] = useState('');
   const [taxQuery, setTaxQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [selectedIncome, setSelectedIncome] = useState(null);
   
   // Form states
   const [expenseForm, setExpenseForm] = useState({
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     description: '',
     category: '',
     base_amount: '',
@@ -62,7 +84,7 @@ function App() {
   });
 
   const [incomeForm, setIncomeForm] = useState({
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     description: '',
     base_amount: '',
     client_name: '',
@@ -76,6 +98,7 @@ function App() {
   }, []);
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const [expensesRes, incomeRes, summaryRes] = await Promise.all([
         axios.get(`${API}/expenses`),
@@ -87,17 +110,36 @@ function App() {
       setIncome(incomeRes.data);
       setGstSummary(summaryRes.data);
     } catch (error) {
-      toast.error('Failed to fetch data');
+      toast({
+        title: "Error",
+        description: "Failed to fetch data. Please check your connection.",
+        variant: "destructive"
+      });
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
+    if (!expenseForm.description || !expenseForm.category || !expenseForm.base_amount) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      await axios.post(`${API}/expenses`, expenseForm);
+      await axios.post(`${API}/expenses`, {
+        ...expenseForm,
+        base_amount: parseFloat(expenseForm.base_amount)
+      });
+      
       setExpenseForm({
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         description: '',
         category: '',
         base_amount: '',
@@ -106,20 +148,41 @@ function App() {
         user_state: 'Karnataka',
         invoice_number: ''
       });
-      toast.success('Expense added successfully');
+      
+      toast({
+        title: "Success",
+        description: "Expense added successfully",
+      });
       fetchData();
     } catch (error) {
-      toast.error('Failed to add expense');
+      toast({
+        title: "Error",
+        description: "Failed to add expense. Please try again.",
+        variant: "destructive"
+      });
       console.error(error);
     }
   };
 
   const handleIncomeSubmit = async (e) => {
     e.preventDefault();
+    if (!incomeForm.description || !incomeForm.base_amount) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      await axios.post(`${API}/income`, incomeForm);
+      await axios.post(`${API}/income`, {
+        ...incomeForm,
+        base_amount: parseFloat(incomeForm.base_amount)
+      });
+      
       setIncomeForm({
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         description: '',
         base_amount: '',
         client_name: '',
@@ -127,40 +190,347 @@ function App() {
         user_state: 'Karnataka',
         invoice_number: ''
       });
-      toast.success('Income added successfully');
+      
+      toast({
+        title: "Success",
+        description: "Income added successfully",
+      });
       fetchData();
     } catch (error) {
-      toast.error('Failed to add income');
+      toast({
+        title: "Error",
+        description: "Failed to add income. Please try again.",
+        variant: "destructive"
+      });
       console.error(error);
     }
   };
 
-  const handleTaxAdvice = async () => {
-    if (!taxQuery.trim()) return;
+  const handleTaxAdvice = async (query = taxQuery) => {
+    if (!query.trim()) return;
     
     setIsLoading(true);
     try {
       const response = await axios.post(`${API}/tax-advice`, {
-        query: taxQuery,
+        query: query,
         user_context: { gst_summary: gstSummary }
       });
       setTaxAdvice(response.data.advice);
       setTaxQuery('');
+      
+      toast({
+        title: "Success",
+        description: "Tax advice generated successfully",
+      });
     } catch (error) {
-      toast.error('Failed to get tax advice');
+      toast({
+        title: "Error",
+        description: "Failed to get tax advice. Please try again.",
+        variant: "destructive"
+      });
       console.error(error);
     }
     setIsLoading(false);
   };
 
   const deleteExpense = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+    
     try {
       await axios.delete(`${API}/expenses/${id}`);
-      toast.success('Expense deleted');
+      toast({
+        title: "Success",
+        description: "Expense deleted successfully",
+      });
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete expense');
+      toast({
+        title: "Error",
+        description: "Failed to delete expense",
+        variant: "destructive"
+      });
+      console.error(error);
     }
+  };
+
+  const deleteIncome = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this income record?')) return;
+    
+    try {
+      await axios.delete(`${API}/income/${id}`);
+      toast({
+        title: "Success",
+        description: "Income record deleted successfully",
+      });
+      fetchData();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete income record",
+        variant: "destructive"
+      });
+      console.error(error);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IN');
+  };
+
+  const getGSTTypeDisplay = (gstCalc) => {
+    if (gstCalc.is_interstate) {
+      return <Badge variant="outline">IGST ({gstCalc.gst_rate}%)</Badge>;
+    } else {
+      return (
+        <div className="flex gap-1">
+          <Badge variant="outline" className="text-xs">CGST ({gstCalc.gst_rate/2}%)</Badge>
+          <Badge variant="outline" className="text-xs">SGST ({gstCalc.gst_rate/2}%)</Badge>
+        </div>
+      );
+    }
+  };
+
+  const getDashboardInsights = () => {
+    if (!gstSummary) return [];
+    
+    const insights = [];
+    
+    // GST Liability Alert
+    if (gstSummary.net_gst_liability > 50000) {
+      insights.push({
+        type: 'warning',
+        title: 'High GST Liability',
+        description: `Your current GST liability is ${formatCurrency(gstSummary.net_gst_liability)}. Consider advance payment.`,
+        action: 'Plan GST Payment'
+      });
+    }
+    
+    // ITC Optimization
+    if (gstSummary.input_tax_credit < gstSummary.output_gst * 0.3) {
+      insights.push({
+        type: 'info',
+        title: 'ITC Optimization',
+        description: 'You might be missing Input Tax Credit claims. Review your business expenses.',
+        action: 'Review Expenses'
+      });
+    }
+    
+    // Quarterly Filing Reminder
+    const currentDate = new Date();
+    const quarterEnd = new Date(currentDate.getFullYear(), Math.floor(currentDate.getMonth() / 3) * 3 + 3, 0);
+    const daysToQuarterEnd = Math.ceil((quarterEnd - currentDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysToQuarterEnd <= 15 && daysToQuarterEnd > 0) {
+      insights.push({
+        type: 'info',
+        title: 'Quarter End Approaching',
+        description: `Quarter ends in ${daysToQuarterEnd} days. Prepare your GST returns.`,
+        action: 'View Returns'
+      });
+    }
+    
+    return insights;
+  };
+
+  const renderDashboard = () => {
+    const insights = getDashboardInsights();
+    
+    return (
+      <div className="space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{gstSummary ? formatCurrency(gstSummary.total_sales) : '₹0.00'}</div>
+              <p className="text-xs text-muted-foreground">Revenue with GST</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{gstSummary ? formatCurrency(gstSummary.total_purchases) : '₹0.00'}</div>
+              <p className="text-xs text-muted-foreground">Purchases with GST</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Net GST Liability</CardTitle>
+              <Calculator className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {gstSummary ? formatCurrency(gstSummary.net_gst_liability) : '₹0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">Amount to pay</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Input Tax Credit</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {gstSummary ? formatCurrency(gstSummary.input_tax_credit) : '₹0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">Credit available</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Insights and Alerts */}
+        {insights.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5" />
+                Smart Insights
+              </CardTitle>
+              <CardDescription>AI-powered recommendations for your business</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {insights.map((insight, index) => (
+                  <Alert key={index} className={insight.type === 'warning' ? 'border-orange-200 bg-orange-50' : 'border-blue-200 bg-blue-50'}>
+                    {insight.type === 'warning' ? (
+                      <AlertTriangle className="h-4 w-4" />
+                    ) : (
+                      <Info className="h-4 w-4" />
+                    )}
+                    <AlertTitle>{insight.title}</AlertTitle>
+                    <AlertDescription className="mt-2">
+                      {insight.description}
+                      <Button variant="link" className="p-0 h-auto font-medium text-sm ml-2">
+                        {insight.action} →
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                Recent Expenses
+              </CardTitle>
+              <CardDescription>Last 5 expense entries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {expenses.length > 0 ? (
+                <div className="space-y-3">
+                  {expenses.slice(0, 5).map((expense) => (
+                    <div key={expense.id} className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{expense.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDate(expense.date)} • {expenseCategories.find(cat => cat.value === expense.category)?.label}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{formatCurrency(expense.gst_calculation.total_amount)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          GST: {formatCurrency(expense.gst_calculation.total_gst)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">No expenses recorded yet</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Recent Income
+              </CardTitle>
+              <CardDescription>Last 5 income entries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {income.length > 0 ? (
+                <div className="space-y-3">
+                  {income.slice(0, 5).map((incomeItem) => (
+                    <div key={incomeItem.id} className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{incomeItem.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDate(incomeItem.date)} • {incomeItem.client_name}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{formatCurrency(incomeItem.gst_calculation.total_amount)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          GST: {formatCurrency(incomeItem.gst_calculation.total_gst)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">No income recorded yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Quick Actions
+            </CardTitle>
+            <CardDescription>Common tasks and shortcuts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button variant="outline" onClick={() => setActiveTab('expenses')} className="h-20 flex flex-col items-center justify-center gap-2">
+                <PlusCircle className="h-6 w-6" />
+                Add Expense
+              </Button>
+              <Button variant="outline" onClick={() => setActiveTab('income')} className="h-20 flex flex-col items-center justify-center gap-2">
+                <TrendingUp className="h-6 w-6" />
+                Add Income
+              </Button>
+              <Button variant="outline" onClick={() => setActiveTab('gst-summary')} className="h-20 flex flex-col items-center justify-center gap-2">
+                <BarChart3 className="h-6 w-6" />
+                View Reports
+              </Button>
+              <Button variant="outline" onClick={() => setActiveTab('tax-advice')} className="h-20 flex flex-col items-center justify-center gap-2">
+                <Bot className="h-6 w-6" />
+                Tax Advice
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   const deleteIncome = async (id) => {
