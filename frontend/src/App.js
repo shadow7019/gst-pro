@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Badge } from './components/ui/badge';
 import { Textarea } from './components/ui/textarea';
-import { toast, Toaster } from './components/ui/sonner';
+import { Toaster } from './components/ui/toaster';
+import { useToast } from './hooks/use-toast';
 import { PlusCircle, TrendingUp, TrendingDown, Calculator, MessageCircle, FileText, Trash2, IndianRupee, Building, Receipt, Bot, ChartBar } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
