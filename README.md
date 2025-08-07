@@ -15,13 +15,17 @@ A comprehensive desktop application for GST calculations, expense tracking, and 
 
 ### Option 1: Download Pre-built Installers (Recommended)
 
+**📦 Latest Release: [Download GST Pro v1.0.0](https://github.com/shadow7019/gst-pro/releases/latest)**
+
 1. Go to the [Releases page](https://github.com/shadow7019/gst-pro/releases)
 2. Download the installer for your operating system:
-   - **Windows**: `GST-Pro-Setup-x.x.x.exe`
-   - **macOS**: `GST-Pro-x.x.x.dmg`
-   - **Linux**: `GST-Pro-x.x.x.AppImage`
+   - **Windows**: `GST-Pro-Setup-1.0.0.exe`
+   - **macOS**: `GST-Pro-1.0.0.dmg`
+   - **Linux**: `GST-Pro-1.0.0.AppImage`
 3. Run the installer and follow the setup instructions
 4. Launch GST Pro from your applications menu
+
+> **Note**: First-time users may see a security warning. This is normal for new applications. Click "More info" → "Run anyway" on Windows or allow the app in System Preferences on macOS.
 
 ### Option 2: Build from Source
 
@@ -148,11 +152,30 @@ gst-pro/
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Quick Start for Contributors
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+### Releasing
+
+For maintainers, to create a new release:
+
+```bash
+# Prepare release (updates version numbers and creates git tag)
+./prepare-release.sh 1.0.1
+
+# Push changes and tag
+git push origin main
+git push origin v1.0.1
+
+# GitHub Actions will automatically build and create the release
+```
 
 ## 📝 License
 
