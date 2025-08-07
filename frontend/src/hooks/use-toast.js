@@ -152,4 +152,8 @@ function useToast() {
   };
 }
 
+// Helper functions for common toast types
+toast.success = (title) => toast({ title, variant: "default" });
+toast.error = (title) => toast({ title, variant: "destructive" });
+
 export { useToast, toast }
