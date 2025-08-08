@@ -1,0 +1,13 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+  
+  <!-- GST Text -->
+  <text x="16" y="12" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle" fill="white">GST</text>
+  
+  <!-- Pro Text -->
+  <text x="16" y="22" font-family="Arial, sans-serif" font-size="6" text-anchor="middle" fill="#93c5fd">PRO</text>
+  
+  <!-- Tax symbol -->
+  <path d="M8 8 L24 24 M8 24 L24 8" stroke="#60a5fa" stroke-width="1" opacity="0.3"/>
+</svg>
