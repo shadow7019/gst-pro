@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert'
 import blink from '../blink/client'
-import { formatCurrency, formatDate } from '../utils/gstCalculations'
+import { formatCurrency, formatDate } from '../utils/gstCalculation'
 
 interface GSTSummary {
   totalSales: number

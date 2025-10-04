@@ -7,6 +7,7 @@ import Expenses from './pages/Expenses'
 import Income from './pages/Income'
 import TaxAdvisor from './pages/TaxAdvisor'
 import Reports from './pages/Reports'
+import SpectreDivide from './pages/SpectreDivide'
 import Layout from './components/layout'
 import LoadingScreen from './components/LoadingScreen'
 
@@ -62,6 +63,7 @@ function App() {
             <Route path="/income" element={<Income />} />
             <Route path="/tax-advisor" element={<TaxAdvisor />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/spectre-divide" element={<SpectreDivide />} />
           </Routes>
         </Layout>
       </div>

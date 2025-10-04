@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  Gamepad2
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback } from './ui/avatar'
@@ -34,6 +35,7 @@ const navigation = [
   { name: 'Income', href: '/income', icon: TrendingUp },
   { name: 'Tax Advisor', href: '/tax-advisor', icon: Bot },
   { name: 'Reports', href: '/reports', icon: FileText },
+  { name: 'Spectre Divide', href: '/spectre-divide', icon: Gamepad2 },
 ]
 
 export default function Layout({ children, user }: LayoutProps) {
