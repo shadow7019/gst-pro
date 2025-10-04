@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../components/ui/badge'
 import { toast } from 'sonner'
 import blink from '../blink/client'
-import { calculateGst, indianStates, formatCurrency, formatDate } from '../utils/gstCalculations'
+import { calculateGst, indianStates, formatCurrency, formatDate } from '../utils/gstCalculation'
 
 interface Income {
   id: string
