@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { FileText, Download, BarChart3, PieChart, TrendingUp, TrendingDown } from 'lucide-react'
+import { FileText, Download, BarChart3, TrendingUp, TrendingDown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import blink from '../blink/client'
-import { formatCurrency, formatDate } from '../utils/gstCalculations'
+import { formatCurrency } from '../utils/gstCalculations'
 
 interface GSTSummary {
   totalSales: number
@@ -18,10 +18,20 @@ interface GSTSummary {
   igstLiability: number
 }
 
+interface TransactionRecord {
+  date: string
+  totalAmount?: number
+  totalGst?: number
+  cgst?: number
+  sgst?: number
+  igst?: number
+  category?: string
+}
+
 export default function Reports() {
   const [gstSummary, setGstSummary] = useState<GSTSummary | null>(null)
-  const [expenses, setExpenses] = useState<any[]>([])
-  const [income, setIncome] = useState<any[]>([])
+  const [expenses, setExpenses] = useState<TransactionRecord[]>([])
+  const [income, setIncome] = useState<TransactionRecord[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

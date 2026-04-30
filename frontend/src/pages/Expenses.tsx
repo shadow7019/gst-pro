@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { PlusCircle, Trash2, Edit } from 'lucide-react'
+import { PlusCircle, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
@@ -33,11 +33,16 @@ interface Expense {
   updatedAt: string
 }
 
+interface User {
+  id: string
+  email?: string
+}
+
 export default function Expenses() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   
   const [expenseForm, setExpenseForm] = useState({
     date: new Date().toISOString().split('T')[0],

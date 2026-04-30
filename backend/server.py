@@ -13,6 +13,10 @@ import uuid
 from enum import Enum
 import json
 import sys
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Get the directory where the executable or script is located
 if getattr(sys, 'frozen', False):
@@ -22,8 +26,15 @@ else:
     # Running as script
     BASE_DIR = Path(__file__).parent
 
-# Database path
+# Database path (SQLite fallback)
 DB_PATH = BASE_DIR / "gst_data.db"
+
+# MongoDB connection
+MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.environ.get("DB_NAME", "gst_automation_db")
+
+mongo_client = AsyncIOMotorClient(MONGO_URL)
+db = mongo_client[DB_NAME]
 
 # Create the main app
 app = FastAPI(title="GST Automation Platform", version="1.0.0")

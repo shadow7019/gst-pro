@@ -32,11 +32,16 @@ interface Income {
   updatedAt: string
 }
 
+interface User {
+  id: string
+  email?: string
+}
+
 export default function Income() {
   const [income, setIncome] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   
   const [incomeForm, setIncomeForm] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -93,9 +98,7 @@ export default function Income() {
       const gstCalc = calculateGst(
         baseAmount,
         incomeForm.userState,
-        incomeForm.clientState || incomeForm.userState,
-        undefined, // No category for income, default 18%
-        true // isIncome
+        incomeForm.clientState || incomeForm.userState
       )
       
       const incomeData = {

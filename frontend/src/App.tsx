@@ -10,12 +10,17 @@ import Reports from './pages/Reports'
 import Layout from './components/layout'
 import LoadingScreen from './components/LoadingScreen'
 
+interface AuthState {
+  user: { id: string; email?: string; displayName?: string } | null
+  isLoading: boolean
+}
+
 function App() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<AuthState['user']>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = blink.auth.onAuthStateChanged((state: any) => {
+    const unsubscribe = blink.auth.onAuthStateChanged((state: AuthState) => {
       setUser(state.user)
       setLoading(state.isLoading)
     })

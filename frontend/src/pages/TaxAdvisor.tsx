@@ -25,12 +25,17 @@ const quickTaxQueries = [
   { title: 'ITC Optimization', query: 'How can I maximize my Input Tax Credit?' }
 ]
 
+interface User {
+  id: string
+  email?: string
+}
+
 export default function TaxAdvisor() {
   const [taxQuery, setTaxQuery] = useState('')
   const [taxAdvice, setTaxAdvice] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [consultations, setConsultations] = useState<TaxConsultation[]>([])
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     const unsubscribe = blink.auth.onAuthStateChanged((state) => {

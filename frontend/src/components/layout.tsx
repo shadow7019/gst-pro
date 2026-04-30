@@ -23,9 +23,15 @@ import {
 } from './ui/dropdown-menu'
 import blink from '../blink/client'
 
+interface User {
+  id: string
+  email?: string
+  displayName?: string
+}
+
 interface LayoutProps {
   children: React.ReactNode
-  user: any
+  user: User
 }
 
 const navigation = [

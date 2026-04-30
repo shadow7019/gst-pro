@@ -46,8 +46,7 @@ export function calculateGst(
   baseAmount: number,
   userState: string,
   vendorState: string,
-  category?: string,
-  isIncome: boolean = false
+  category?: string
 ): GSTCalculation {
   const gstRate = category ? getGstRateForCategory(category) : 18
   const isInterstate = userState.toLowerCase() !== vendorState.toLowerCase()
