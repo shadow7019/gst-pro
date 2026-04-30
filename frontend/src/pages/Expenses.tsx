@@ -88,6 +88,17 @@ export default function Expenses() {
       return
     }
 
+    const baseAmount = parseFloat(expenseForm.baseAmount)
+    if (isNaN(baseAmount) || baseAmount <= 0) {
+      toast.error('Please enter a valid amount greater than zero')
+      return
+    }
+
+    if (expenseForm.description.trim().length > 500) {
+      toast.error('Description must not exceed 500 characters')
+      return
+    }
+
     if (!user) {
       toast.error('Please sign in to add expenses')
       return
@@ -96,7 +107,6 @@ export default function Expenses() {
     try {
       setSubmitting(true)
       
-      const baseAmount = parseFloat(expenseForm.baseAmount)
       const gstCalc = calculateGst(
         baseAmount,
         expenseForm.userState,
@@ -108,7 +118,7 @@ export default function Expenses() {
         id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId: user.id,
         date: expenseForm.date,
-        description: expenseForm.description,
+        description: expenseForm.description.trim(),
         category: expenseForm.category,
         baseAmount: baseAmount,
         vendorName: expenseForm.vendorName,
@@ -212,6 +222,7 @@ export default function Expenses() {
                 value={expenseForm.description}
                 onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
                 placeholder="Office supplies, software license..."
+                maxLength={500}
                 required
               />
             </div>
@@ -238,6 +249,7 @@ export default function Expenses() {
                 id="amount"
                 type="number"
                 step="0.01"
+                min="0.01"
                 value={expenseForm.baseAmount}
                 onChange={(e) => setExpenseForm({...expenseForm, baseAmount: e.target.value})}
                 placeholder="0.00"

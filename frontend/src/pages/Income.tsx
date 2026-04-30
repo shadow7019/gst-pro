@@ -86,6 +86,17 @@ export default function Income() {
       return
     }
 
+    const baseAmount = parseFloat(incomeForm.baseAmount)
+    if (isNaN(baseAmount) || baseAmount <= 0) {
+      toast.error('Please enter a valid amount greater than zero')
+      return
+    }
+
+    if (incomeForm.description.trim().length > 500) {
+      toast.error('Description must not exceed 500 characters')
+      return
+    }
+
     if (!user) {
       toast.error('Please sign in to add income')
       return
@@ -94,7 +105,6 @@ export default function Income() {
     try {
       setSubmitting(true)
       
-      const baseAmount = parseFloat(incomeForm.baseAmount)
       const gstCalc = calculateGst(
         baseAmount,
         incomeForm.userState,
@@ -105,7 +115,7 @@ export default function Income() {
         id: `inc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId: user.id,
         date: incomeForm.date,
-        description: incomeForm.description,
+        description: incomeForm.description.trim(),
         baseAmount: baseAmount,
         clientName: incomeForm.clientName,
         clientState: incomeForm.clientState || incomeForm.userState,
@@ -207,6 +217,7 @@ export default function Income() {
                 value={incomeForm.description}
                 onChange={(e) => setIncomeForm({...incomeForm, description: e.target.value})}
                 placeholder="Consulting services, project work..."
+                maxLength={500}
                 required
               />
             </div>
@@ -217,6 +228,7 @@ export default function Income() {
                 id="income_amount"
                 type="number"
                 step="0.01"
+                min="0.01"
                 value={incomeForm.baseAmount}
                 onChange={(e) => setIncomeForm({...incomeForm, baseAmount: e.target.value})}
                 placeholder="0.00"
